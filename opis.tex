@@ -1,0 +1,86 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[polish]{babel}
+\usepackage[margin=3.5cm]{geometry}
+\usepackage{setspace}
+\setstretch{1.0}
+\usepackage[document]{ragged2e}
+\usepackage{authblk}
+
+
+\author{Aleksander Grzegrzułka \qquad Adam Grzywacz}
+\affil{Wydział Zastosowań Informatyki i Matematyki, Szkoła Główna Gospodarstwa Wiejskiego w Warszawie}
+\title{Dokumentacja Projektu: Najszybszy Przepływ Gazu}
+\date{\today}
+
+\begin{document}
+	
+	\maketitle
+	
+	
+	\justify
+	
+	Archiwum zawiera następujące pliki:
+	
+	
+	\begin{itemize}
+		\item \texttt{projekt.exe} - skompilowana wersja programu (dla systemu Windows)
+		\item \texttt{projekt.py} - główny plik z kodem źródłowym programu
+		\item \texttt{opis.pdf} - dokumentacja projektu
+		\item \texttt{example.txt} - przykładowy plik z danymi wejściowymi
+		\item \texttt{font.ttf} - czcionka używana w interfejsie graficznym
+	\end{itemize}
+	
+	\section{Formulacja zadania}
+	
+	\textbf{13.} W oparciu o metodę poszukiwania maksymalnego przepływu w sieci opracować i zaimplementować algorytm najszybszego przepływu gazu w sieci pomiędzy jej dwoma punktami.
+	
+	\section{Opis algorytmu}
+	
+	Program wykorzystuje algorytm \textbf{Edmondsa-Karpa}, będący implementacją metody Forda-Fulkersona. Służy do wyznaczania maksymalnego przepływu w sieci (w tym przypadku obrazującego najszybszy przepływ gazu w systemie rurociągów).
+	
+	Zasada działania:
+	
+	\begin{enumerate}
+		\item Znajduje ścieżkę powiększającą od źródła do ujścia przy użyciu algorytmu przeszukiwania wszerz (funkcja \texttt{Graph.bfs()}). Gwarantuje to znalezienie najkrótszej ścieżki pod względem liczby krawędzi.
+		\item Określa przepustowość tej ścieżki (tzw. wąskie gardło – krawędź o najmniejszej dostępnej wadze na znalezionej trasie).
+		\item Aktualizuje sieć rezydualną: pomniejsza dostępną przepustowość na krawędziach wzdłuż ścieżki o znalezioną wartość i dodaje tę samą przepustowość do krawędzi powrotnych (umożliwiając algorytmowi "cofnięcie" nieoptymalnych decyzji w kolejnych iteracjach).
+		\item Pętla powtarza się, dopóki algorytm BFS potrafi wyznaczyć jakąkolwiek przepustową ścieżkę od źródła do ujścia. Suma przepływów z poszczególnych iteracji stanowi maksymalny możliwy przepływ.
+	\end{enumerate}
+	
+	Złożoność czasowa algorytmu wynosi $O(V E^2)$, gdzie $V$ to liczba wierchułków, a $E$ to liczba krawędzi.
+	
+	\section{Instrukcja obsługi programu}
+	
+	Wierchułki można w dowolnym momencie przesuwać na siatce, przytrzymując i przeciągając je lewym przyciskiem myszy.
+	
+	Boczny panel sterowania dzieli się na cztery sekcje:
+	
+	\subsection*{Akcje}
+	\begin{itemize}
+		\item \textbf{Dodaj Wierchułek:} Kliknij na puste miejsce na siatce, aby utworzyć nowy węzeł.
+		\item \textbf{Usuń Wierchułek/Krawędź:} Kliknij na istniejący wierchułek lub krawędź, aby usunąć go z grafu.
+		\item \textbf{Dodaj Krawędź:} Kliknij wierchułek początkowy, a następnie końcowy. Wpisz wagę krawędzi (pojemność rurociągu) i zatwierdź klawiszem \texttt{Enter}. Akcję można przerwać w dowolnym momencie klawiszem \texttt{Esc}.
+	\end{itemize}
+	
+	\subsection*{Punkty skrajne}
+	\begin{itemize}
+		\item \textbf{Ustaw źródło:} Wybierz wierchułek, z którego wpompowywany jest gaz (\texttt{IN}, kolor zielony).
+		\item \textbf{Ustaw ujście:} Wybierz wierchułek docelowy, do którego dopływa gaz (\texttt{OUT}, kolor czerwony).
+	\end{itemize}
+	
+	\subsection*{Symulacja}
+	\begin{itemize}
+		\item \textbf{Uruchom:} Inicjuje działanie algorytmu. Na krawędziach pojawi się animacja mrowienia ilustrująca przepływ gazu, a w lewym dolnym rogu wyświetli się obliczona wartość maksymalnego przepływu.
+		\item \textbf{Wyczyść symulację:} Zatrzymuje animację i ukrywa wyniki, zachowując strukturę utworzonego grafu do dalszej edycji.
+	\end{itemize}
+	
+	\subsection*{Projekt}
+	\begin{itemize}
+		\item \textbf{Wczytaj z pliku:} Otwiera przeglądarkę plików, aby wczytać graf z pliku \texttt{.txt} (zawiera informacje o źródle i ujściu oraz macierz sąsiedztwa). Wczytane wierchułki zostaną automatycznie zaaranżowane na okręgu.
+		\item \textbf{Zapisz do pliku:} Otwiera przeglądarkę plików, aby wyeksportować stworzoną sieć do pliku \texttt{.txt}.
+		\item \textbf{Wyczyść projekt:} Całkowicie resetuje obszar roboczy, usuwając wszystkie wierchułki, krawędzie i wyniki obliczeń.
+	\end{itemize}
+	
+\end{document}
