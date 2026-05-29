@@ -486,16 +486,30 @@ while running:
                                     sink_node -= 1
                             else:
                                 for u, v in list(edges.keys()):
-                                    if (
-                                        point_to_segment_dist(
-                                            event.pos, nodes[u], nodes[v]
+                                    offset = 12 if (v, u) in edges else 0
+                                    dx, dy = (
+                                        nodes[v][0] - nodes[u][0],
+                                        nodes[v][1] - nodes[u][1],
+                                    )
+                                    length = math.hypot(dx, dy)
+                                    if length > 0:
+                                        nx, ny = -dy / length, dx / length
+                                        p1 = (
+                                            nodes[u][0] + nx * offset,
+                                            nodes[u][1] + ny * offset,
                                         )
-                                        < 10
-                                    ):
-                                        flow_paths.clear()
-                                        max_flow_result = 0
-                                        del edges[(u, v)]
-                                        break
+                                        p2 = (
+                                            nodes[v][0] + nx * offset,
+                                            nodes[v][1] + ny * offset,
+                                        )
+                                        if (
+                                            point_to_segment_dist(event.pos, p1, p2)
+                                            < 10
+                                        ):
+                                            flow_paths.clear()
+                                            max_flow_result = 0
+                                            del edges[(u, v)]
+                                            break
 
                         elif mode == "ADD_EDGE" and clicked_node is not None:
                             if selected_node is None:
@@ -572,9 +586,16 @@ while running:
             else:
                 is_hovering_edge = False
                 for u, v in edges.keys():
-                    if point_to_segment_dist(mouse_pos, nodes[u], nodes[v]) < 10:
-                        is_hovering_edge = True
-                        break
+                    offset = 12 if (v, u) in edges else 0
+                    dx, dy = nodes[v][0] - nodes[u][0], nodes[v][1] - nodes[u][1]
+                    length = math.hypot(dx, dy)
+                    if length > 0:
+                        nx, ny = -dy / length, dx / length
+                        p1 = (nodes[u][0] + nx * offset, nodes[u][1] + ny * offset)
+                        p2 = (nodes[v][0] + nx * offset, nodes[v][1] + ny * offset)
+                        if point_to_segment_dist(mouse_pos, p1, p2) < 10:
+                            is_hovering_edge = True
+                            break
                 if is_hovering_edge:
                     cursor = pygame.SYSTEM_CURSOR_NO
         elif mode in ["SET_SRC", "SET_SINK"] and hovered_node is not None:
@@ -594,13 +615,19 @@ while running:
         pygame.draw.line(screen, GRID_COLOR, (0, y), (WORK_WIDTH, y))
 
     for (u, v), w in edges.items():
-        draw_arrow(screen, EDGE_COLOR, nodes[u], nodes[v])
-        mid_x, mid_y = (nodes[u][0] + nodes[v][0]) / 2, (nodes[u][1] + nodes[v][1]) / 2
-        if not flow_paths:
-            txt_surf = font.render(str(w), True, TEXT_COLOR)
-            txt_rect = txt_surf.get_rect(center=(mid_x, mid_y - 15))
-            pygame.draw.rect(screen, BG_COLOR, txt_rect.inflate(4, 4))
-            screen.blit(txt_surf, txt_rect)
+        offset = 12 if (v, u) in edges else 0
+        draw_arrow(screen, EDGE_COLOR, nodes[u], nodes[v], offset)
+        dx, dy = nodes[v][0] - nodes[u][0], nodes[v][1] - nodes[u][1]
+        length = math.hypot(dx, dy)
+        if length > 0:
+            nx, ny = -dy / length, dx / length
+            mid_x = (nodes[u][0] + nodes[v][0]) / 2 + nx * offset
+            mid_y = (nodes[u][1] + nodes[v][1]) / 2 + ny * offset
+            if not flow_paths:
+                txt_surf = font.render(str(w), True, TEXT_COLOR)
+                txt_rect = txt_surf.get_rect(center=(mid_x, mid_y - 15))
+                pygame.draw.rect(screen, BG_COLOR, txt_rect.inflate(4, 4))
+                screen.blit(txt_surf, txt_rect)
 
     if mode == "ADD_EDGE" and selected_node is not None and not is_dragging:
         limit_x = min(mouse_pos[0], WORK_WIDTH)
@@ -649,6 +676,7 @@ while running:
                 anim_phase = (current_time / 20.0 / length) % 1.0
                 if length > 5.0:
                     nx, ny = -dy / length, dx / length
+                    base_offset = 12 if (v, u) in edges else 0
 
                     num_ants = max(1, int(length / 25))
                     for ant in range(num_ants):
@@ -656,21 +684,19 @@ while running:
                         ant_x = (
                             nodes[u][0]
                             + (dx / length) * ant_phase * (length - 40)
-                            + nx * current_offset * 1.5
+                            + nx * (current_offset * 1.5 + base_offset)
                         )
                         ant_y = (
                             nodes[u][1]
                             + (dy / length) * ant_phase * (length - 40)
-                            + ny * current_offset * 1.5
+                            + ny * (current_offset * 1.5 + base_offset)
                         )
                         pygame.gfxdraw.filled_circle(
                             screen, int(ant_x), int(ant_y), 2, color
                         )
 
-                    mid_x, mid_y = (
-                        (nodes[u][0] + nodes[v][0]) / 2,
-                        (nodes[u][1] + nodes[v][1]) / 2,
-                    )
+                    mid_x = (nodes[u][0] + nodes[v][0]) / 2 + nx * base_offset
+                    mid_y = (nodes[u][1] + nodes[v][1]) / 2 + ny * base_offset
                     label_center = (mid_x, mid_y - 15)
                     if (weight, label_center) not in flows:
                         flows[(weight, label_center)] = []
