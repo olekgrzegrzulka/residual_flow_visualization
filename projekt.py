@@ -76,10 +76,21 @@ WORK_WIDTH = WIDTH - PANEL_WIDTH
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Wizualizacja Algorytmu Edmondsa-Karpa")
 
-if os.path.exists("font.ttf"):
-    font = pygame.font.Font("font.ttf", 16)
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
+
+font_path = resource_path("font.ttf")
+
+if os.path.exists(font_path):
+    font = pygame.font.Font(font_path, 16)
     font.set_bold(True)
-    large_font = pygame.font.Font("font.ttf", 24)
+    large_font = pygame.font.Font(font_path, 24)
     large_font.set_bold(True)
 else:
     print("Nie znaleziono pliku font.ttf")
