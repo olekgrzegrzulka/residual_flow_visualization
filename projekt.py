@@ -677,13 +677,25 @@ while running:
     if flow_paths:
         offset_multiplier = 8
         flows = {}
+        edge_paths = {}
+
+        for i, (path, _) in enumerate(flow_paths):
+            for j in range(len(path) - 1):
+                edge = (path[j], path[j + 1])
+                if edge not in edge_paths:
+                    edge_paths[edge] = []
+                edge_paths[edge].append(i)
 
         for i, (path, flow) in enumerate(flow_paths):
             color = colors[i % len(colors)]
-            current_offset = (i - len(flow_paths) / 2) * offset_multiplier
 
             for j in range(len(path) - 1):
                 u, v = path[j], path[j + 1]
+
+                local_idx = edge_paths[(u, v)].index(i)
+                local_count = len(edge_paths[(u, v)])
+                current_offset = (local_idx - (local_count - 1) / 2) * offset_multiplier
+
                 weight = edges[(u, v)]
 
                 dx, dy = nodes[v][0] - nodes[u][0], nodes[v][1] - nodes[u][1]
