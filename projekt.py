@@ -5,11 +5,12 @@ import os
 import sys
 import tkinter as tk
 from tkinter import filedialog
+from typing import LiteralString
 
+import networkx
 import pygame
 import pygame.gfxdraw
 from pygame.math import clamp
-from typing_extensions import LiteralString
 
 # Init
 root = tk.Tk()
@@ -256,22 +257,22 @@ def load_from_file():
         temp_edges = {}
         center_x = WORK_WIDTH // 2
         center_y = HEIGHT // 2
-        radius = min(WORK_WIDTH, HEIGHT) // 3
+        radius = min(WORK_WIDTH, HEIGHT) * 0.45
 
         if any(matrix[i][j] < 0 for i in range(size) for j in range(size)):
             raise ValueError("Wagi krawędzi muszą być dodatnie!")
 
+        G = networkx.DiGraph()
+        G.add_nodes_from(range(size))
+
         for i in range(size):
-            angle = 2 * math.pi * i / size
-            temp_nodes.append(
-                [
-                    int(center_x + radius * math.cos(angle)),
-                    int(center_y + radius * math.sin(angle)),
-                ]
-            )
             for j in range(size):
                 if matrix[i][j] > 0:
                     temp_edges[(i, j)] = matrix[i][j]
+                    G.add_edge(i, j)
+        pos = networkx.spring_layout(G, center=(center_x, center_y), scale=radius)
+        for i in range(size):
+            temp_nodes.append([int(pos[i][0]), int(pos[i][1])])
 
         nodes.clear()
         edges.clear()
@@ -279,6 +280,7 @@ def load_from_file():
         edges.update(temp_edges)
 
     except Exception as _e:
+        print(_e)
         error_msg_text = "Błąd pliku: Niepoprawna macierz lub format!"
         error_msg_time = pygame.time.get_ticks()
 
@@ -429,6 +431,7 @@ while running:
                             try:
                                 save_to_file()
                             except Exception as _e:
+                                print(_e)
                                 error_msg_text = "Bład zapisu pliku"
                                 error_msg_time = current_time
                         elif key == "LOAD":
@@ -437,6 +440,7 @@ while running:
                                 flow_paths.clear()
                                 max_flow_result = 0
                             except Exception as _e:
+                                print(_e)
                                 error_msg_text = "Bład wczytywania pliku"
                                 error_msg_time = current_time
                         else:
