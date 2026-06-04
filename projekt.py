@@ -341,7 +341,7 @@ labels = {
     "SET_SRC": "Ustaw źródło",
     "SET_SINK": "Ustaw ujście",
     "RUN": "Uruchom",
-    "CLEAR_SIM": "Wyczyść symulację",
+    "CLEAR_SIM": "Zatrzymaj",
     "LOAD": "Wczytaj z pliku",
     "SAVE": "Zapisz do pliku",
     "CLEAR": "Wyczyść projekt",
@@ -700,8 +700,9 @@ while running:
 
                 dx, dy = nodes[v][0] - nodes[u][0], nodes[v][1] - nodes[u][1]
                 length = math.hypot(dx, dy)
-                anim_phase = (current_time / 20.0 / length) % 1.0
+                anim_phase = 0.0
                 if length > 5.0:
+                    anim_phase = (current_time / 20.0 / length) % 1.0
                     nx, ny = -dy / length, dx / length
                     base_offset = 12 if (v, u) in edges else 0
 
